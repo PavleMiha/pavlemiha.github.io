@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0e171b">
+  <title>Department of Rockety Affairs</title>
+  <link rel="icon" href="data:,">
+  <style>
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#0e171b; }
+    canvas { width:100%; height:100%; display:block; image-rendering:pixelated; outline:none; }
+    /* The game's own title plate (scripts/prepare_loading.py), drawn at the
+       UI's logical pixels and scaled by whole device pixels like the UI. */
+    #loading { position:absolute; left:0; top:0; width:420px; height:132px; transform-origin:0 0;
+      background:url(loading.png) no-repeat; image-rendering:pixelated; pointer-events:none; }
+    #loading i { position:absolute; left:20px; top:108px; width:380px; height:5px;
+      background:url(stripe.png) repeat-x; image-rendering:pixelated; animation:march 1s steps(12) infinite; }
+    @keyframes march { from { background-position:0 0; } to { background-position:12px 0; } }
+  </style>
+</head>
+<body>
+  <div id="loading" role="status" aria-label="Loading"><i></i></div>
+  <canvas id="glcanvas" tabindex="0" aria-label="Department of Rockety Affairs. Mouse to build, Space for next stage, A and D to steer, W and S for throttle, Escape to pause."></canvas>
+  <script src="mq_js_bundle.js"></script>
+  <script src="bridge.js"></script>
+  <script src="engine_audio.js"></script>
+  <script>
+    // Scale the loading plate as the UI scales (min(w/960, h/540)), snapped
+    // to whole device pixels so its pixel art stays crisp.
+    const plate = document.getElementById("loading");
+    const fit = () => {
+      if (!plate.isConnected) return;
+      const dpr = window.devicePixelRatio || 1;
+      const s = Math.max(1, Math.round(Math.min(innerWidth / 960, innerHeight / 540) * dpr)) / dpr;
+      // Centred on a whole device pixel, so no texel straddles two.
+      plate.style.left = `${Math.round((innerWidth - 420 * s) / 2 * dpr) / dpr}px`;
+      plate.style.top = `${Math.round((innerHeight - 132 * s) / 2 * dpr) / dpr}px`;
+      plate.style.transform = `scale(${s})`;
+    };
+    fit();
+    addEventListener("resize", fit);
+    // Right-click erases parts; never let the browser menu take the click.
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    load("ember-bureau.wasm");
+  </script>
+</body>
+</html>
